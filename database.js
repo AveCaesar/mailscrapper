@@ -43,3 +43,6 @@ exports.nextState = () => {
   
   Statedb.push("/counter", 0)
 }
+
+exports.getState = () => Statedb.getData("/")
+

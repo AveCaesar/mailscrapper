@@ -57,5 +57,8 @@ exports.CATEGORIES = [
 ]
 
 exports.getSelector = (selector_name) => ({
-  title: "lololol"
+  GRID_CONTAINER: ".card.no-rationale",
+  GRID_NAME: "a.subtitle",
+  APP_MAIL: ".xyOfqd > .hAyfc:last-child > .htlgb .htlgb > div:nth-child(2) > a",
+  APP_ADDITIONAL: ".xyOfqd > .hAyfc:last-child > .htlgb .htlgb > div:last-child"
 })[selector_name]
