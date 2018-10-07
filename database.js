@@ -5,8 +5,8 @@ const { CATEGORIES } = require('./otherData')
 
 /*====================================== MAIL ========================================== */
 
-exports.pushMail = (company_name, mail, additional_info) => {
-  Maildb.push("/" + company_name, [mail, additional_info])
+exports.pushMail = (info) => {
+  Maildb.push("/" + info.company_name, [info.mail, info.additional_info])
 }
 
 exports.isCompanyExists = (company_name) => {
