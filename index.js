@@ -1,6 +1,6 @@
 const nightmare = require('nightmare')({ show: true })
 const { getSelector } = require('./otherData')
-const { pushMail, incrementCounter, nextState, getState, isCompanyExists } = require('./database')
+const { pushMail, pushLink, incrementCounter, nextState, getState, isCompanyExists } = require('./database')
 
 const DEFAULT_LINK = "https://play.google.com/store/apps/category/"
 
@@ -10,22 +10,28 @@ const createURL = () => {
   return DEFAULT_LINK + state.category + state.type
 }
 
-const getNthGridName = async (number) => {
-  let company_name, selector = ".card.no-rationale:nth-child(" + number + ") a.subtitle"
+const getNthGridInfo = async (number) => {
+  let info, selector = {
+    company_name: ".card.no-rationale:nth-child(" + number + ") a.subtitle",
+    link: ".card.no-rationale:nth-child(" + number + ") a.card-click-target" 
+  }
   
   await nightmare
     .evaluate((selector) => {
-      return Array.from(document.querySelectorAll(selector)).map(element => element.innerText)[0]
+      return [
+          Array.from(document.querySelectorAll(selector.company_name)).map(element => element.innerText)[0],
+          Array.from(document.querySelectorAll(selector.link)).map(element => element.href)[0].substr(50)
+      ]
     }, selector)
     .end()
-    .then((title) => {
-      company_name = title
+    .then((a) => {
+      info = a
     })
     .catch(error => {
-      console.error('Getting title from grid failed: ', error)
+      console.error('Getting company name from grid failed: ', error)
     })
     
-  return company_name
+  return info
 }
 
 const goToGrid = () => {
@@ -33,33 +39,27 @@ const goToGrid = () => {
     .goto(createURL())
 }
 
-const getCompanyInfo = (company_name) => {
-  nightmare
-    .
-}
-
 /*===================================== MAIN LOOP ===========================================*/
 
 const Main = async () => {
-  let end = true, counter = 1
+  let end = true, counter = getState().counter
   
   await goToGrid()
   
   while(end) {
     counter++
     
-    let company_name = await getNthGridName(counter)
+    let company_info = await getNthGridInfo(counter)
     
-    if(isCompanyExists(company_name)) {
+    if(isCompanyExists(company_info.company_name)) {
       continue
     }
     
-    let info = await getCompanyInfo(company_name)
+    
   }
+
+  console.log(await getNthGridInfo(1))
   
 }
 
 Main()
-
-
-

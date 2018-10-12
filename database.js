@@ -1,11 +1,13 @@
 const JsonDB = require('node-json-db')
 const Maildb = new JsonDB("MailDB", true, false)
 const Statedb = new JsonDB("StateDB", true, false)
+const Linkdb = new JsonDB("LinkDB", true, false)
 const { CATEGORIES } = require('./otherData')
 
 /*====================================== MAIL ========================================== */
 
 exports.pushMail = (info) => {
+  Linkdb.push("/links[]", link)
   Maildb.push("/" + info.company_name, [info.mail, info.additional_info])
 }
 
@@ -28,7 +30,7 @@ exports.incrementCounter = () => {
 
 exports.nextState = () => {
   if(Statedb.getData("/type") === "/collection/topselling_free") {
-    Statedb.push("/type", "/collection/topgrossing")
+    Statedb.push("/type", "/collection/topselling_paid")
   } else {    
     let category_name = Statedb.getData("/category")
     
