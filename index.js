@@ -8,27 +8,30 @@ const createURL = () => {
   return "https://play.google.com/store/apps/category/" + state.category + state.type
 }
 
-const getNthGridInfo = async (number) => {
+const getNthGridInfo = async (number) => {  
   let info, selector = {
     company_name: ".card.no-rationale:nth-child(" + number + ") a.subtitle",
-    link: ".card.no-rationale:nth-child(" + number + ") a.card-click-target" 
+    link: ".card.no-rationale:nth-child(" + number + ") a.card-click-target"
   }
   
   await nightmare
     .evaluate((selector) => {
-      return [
+      if(Array.from(document.querySelectorAll(selector.link)).map(element => element.href)[0] !== undefined) {
+        return [
           Array.from(document.querySelectorAll(selector.company_name)).map(element => element.innerText)[0],
           Array.from(document.querySelectorAll(selector.link)).map(element => element.href)[0].substr(50)
-      ]
+        ]
+      }
+      
+      return undefined
     }, selector)
-    .end()
     .then((a) => {
       info = a
     })
     .catch(error => {
       console.error('Getting company name from grid failed: ', error)
     })
-    
+  
   return info
 }
 
@@ -40,50 +43,54 @@ const goToGrid = () => {
 /*===================================== MAIN LOOP ===========================================*/
 
 const Main = async () => {
-  let end = true, counter = 1
+  let end = true, counter = 1, scroll_counter = 1
   
   await goToGrid()
   
-  while(end) {
+  while(true) {
     counter++
     
     let info = await getNthGridInfo(counter)
     
-    if(isCompanyExists(company_info.company_name) && info !== undefined) {
-      continue
-    } else if(info === undefined) {
-      console.log("Border is riched. Trying to scroll down")
-
-      let cardSelector = ".card.no-rationale:nth-child(" + counter + ")"
+    if(Array.isArray(info)) {
+      if(isCompanyExists(info[0])) {
+        continue
+      }
       
-      try {        
+      previousPush(info)
+      continue
+    }
+    
+    console.log("Border is riched. Trying to scroll down")
+
+    let cardSelector = ".card.no-rationale:nth-child(" + counter + ")"
+    scroll_counter++
+    
+    try {              
+      await nightmare
+        .wait(1000)
+        .scrollTo(100000, 20)
+        .wait(cardSelector)
+        
+      info = await getNthGridInfo(counter)
+    } catch (err) {
+      console.log("Scrolling is unsuccessfull. Trying to press 'show more'")
+      
+      try {
         await nightmare
-          .scrollTo(10000, 0)
+          .click("#show-more-button")
           .wait(cardSelector)
           
         info = await getNthGridInfo(counter)
       } catch (err) {
-        console.log("Scrolling used to be unsuccessfull. Trying to press 'show more'")
-        
-        try {
-          await nightmare
-            .click("#show-more-button")
-            .wait(cardSelector)
-            
-          info = await getNthGridInfo(counter)
-        } catch (err) {
-          console.log("Pressing is unsuccessfull. Going forward")
-          process.exit(0)
-        }
+        console.log("Pressing is unsuccessfull. Going forward")
+        process.exit(0)
       }
     }
-    
-    previousPush(info)
-  }
-  
+  }  
 }
 
-//Main()
+Main()
 
 const Test = async () => {
   
@@ -94,4 +101,4 @@ const Test = async () => {
   
 }
 
-Test()
+//Test()
