@@ -6,8 +6,12 @@ const { CATEGORIES } = require('./otherData')
 
 /*====================================== MAIL ========================================== */
 
-exports.pushMail = (info) => {
-  Linkdb.push("/links[]", link)
+exports.previousPush = (info) => {
+  Maildb.push("/" + info[0], [])
+  Linkdb.push("/links[]", info[1])
+}
+
+exports.finalPush = (info) => {
   Maildb.push("/" + info.company_name, [info.mail, info.additional_info])
 }
 
@@ -42,8 +46,6 @@ exports.nextState = () => {
     Statedb.push("/category", CATEGORIES[CATEGORIES.indexOf(category_name) + 1])
     Statedb.push("/type", "/collection/topselling_free")
   }
-  
-  Statedb.push("/counter", 0)
 }
 
 exports.getState = () => Statedb.getData("/")

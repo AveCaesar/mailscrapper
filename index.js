@@ -1,13 +1,11 @@
 const nightmare = require('nightmare')({ show: true })
 const { getSelector } = require('./otherData')
-const { pushMail, pushLink, incrementCounter, nextState, getState, isCompanyExists } = require('./database')
-
-const DEFAULT_LINK = "https://play.google.com/store/apps/category/"
+const { previousPush, nextState, getState, isCompanyExists } = require('./database')
 
 const createURL = () => {
   let state = getState()
   
-  return DEFAULT_LINK + state.category + state.type
+  return "https://play.google.com/store/apps/category/" + state.category + state.type
 }
 
 const getNthGridInfo = async (number) => {
@@ -42,24 +40,58 @@ const goToGrid = () => {
 /*===================================== MAIN LOOP ===========================================*/
 
 const Main = async () => {
-  let end = true, counter = getState().counter
+  let end = true, counter = 1
   
   await goToGrid()
   
   while(end) {
     counter++
     
-    let company_info = await getNthGridInfo(counter)
+    let info = await getNthGridInfo(counter)
     
-    if(isCompanyExists(company_info.company_name)) {
+    if(isCompanyExists(company_info.company_name) && info !== undefined) {
       continue
+    } else if(info === undefined) {
+      console.log("Border is riched. Trying to scroll down")
+
+      let cardSelector = ".card.no-rationale:nth-child(" + counter + ")"
+      
+      try {        
+        await nightmare
+          .scrollTo(10000, 0)
+          .wait(cardSelector)
+          
+        info = await getNthGridInfo(counter)
+      } catch (err) {
+        console.log("Scrolling used to be unsuccessfull. Trying to press 'show more'")
+        
+        try {
+          await nightmare
+            .click("#show-more-button")
+            .wait(cardSelector)
+            
+          info = await getNthGridInfo(counter)
+        } catch (err) {
+          console.log("Pressing is unsuccessfull. Going forward")
+          process.exit(0)
+        }
+      }
     }
     
-    
+    previousPush(info)
   }
-
-  console.log(await getNthGridInfo(1))
   
 }
 
-Main()
+//Main()
+
+const Test = async () => {
+  
+  await goToGrid()
+  
+  await nightmare
+    .scrollTo(10000, 0)
+  
+}
+
+Test()
