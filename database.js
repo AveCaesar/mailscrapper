@@ -8,7 +8,7 @@ const { CATEGORIES } = require('./otherData')
 
 exports.previousPush = (info) => {
   Maildb.push("/" + info[0], [])
-  Linkdb.push("/links[]", info[1], true)
+  Linkdb.push("/links[]", info[1])
 }
 
 exports.finalPush = (info) => {
@@ -20,7 +20,7 @@ exports.finalPush = (info) => {
     }
   }
 }
-
+console.log(Linkdb.getData("/links").length)
 exports.isCompanyExists = (company_name) => {
   try {
     Maildb.getData("/" + company_name)

@@ -1,4 +1,4 @@
-const nightmare = require('nightmare')({waitTimeout: 2000})
+const nightmare = require('nightmare')({waitTimeout: 5000})
 const { previousPush, finalPush, nextState, getState, isCompanyExists, incrementCounter, getLink } = require('./database')
 
 const createURL = () => {
@@ -46,12 +46,12 @@ const Main = async () => {
   
   await goToGrid()
   
-  while(true) {
-    counter++
-    
+  while(true) {    
     let info = await getNthGridInfo(counter)
     
     if(Array.isArray(info)) {
+      counter++
+
       if(isCompanyExists(info[0])) {
         continue
       }
@@ -66,11 +66,9 @@ const Main = async () => {
     
     try {              
       await nightmare
-        .wait(1000)
+        .wait(3000)
         .scrollTo(100000, 20)
         .wait(cardSelector)
-        
-      info = await getNthGridInfo(counter)
     } catch (err) {
       console.log("Scrolling is unsuccessfull. Trying to press 'show more'")
       
@@ -78,8 +76,6 @@ const Main = async () => {
         await nightmare
           .click("#show-more-button")
           .wait(cardSelector)
-          
-        info = await getNthGridInfo(counter)
       } catch (err) {
         console.log("Pressing is unsuccessfull. Going forward")
         nextState()
@@ -88,6 +84,7 @@ const Main = async () => {
     }
   }
   
+  console.log("\nNEW CATEGORY\n");
   Main()  
 }
 
