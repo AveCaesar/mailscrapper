@@ -1,5 +1,4 @@
-const nightmare = require('nightmare')({ show: true, executionTimeout: 5000})
-const { getSelector } = require('./otherData')
+const nightmare = require('nightmare')({waitTimeout: 2000})
 const { previousPush, finalPush, nextState, getState, isCompanyExists, incrementCounter, getLink } = require('./database')
 
 const createURL = () => {
@@ -19,7 +18,7 @@ const getNthGridInfo = async (number) => {
       if(Array.from(document.querySelectorAll(selector.link)).map(element => element.href)[0] !== undefined) {
         return [
           Array.from(document.querySelectorAll(selector.company_name)).map(element => element.innerText)[0],
-          Array.from(document.querySelectorAll(selector.link)).map(element => element.href)[0].substr(50)
+          Array.from(document.querySelectorAll(selector.link)).map(element => element.href)[0].substr(46)
         ]
       }
       
@@ -92,24 +91,45 @@ const Main = async () => {
   Main()  
 }
 
-//Main()
-
 const Final = async () => {
-  while (true) {
-    await nightmare
-      .goto("https://play.google.com/store/apps/details?id=com." + getLink(getState().counter))
-      .evaluate((getSelector) => ({
-        company_name: Array.from(document.querySelectorAll(getSelector["APP_NAME"])).map(element => element.innerText)[0],
-        mail: Array.from(document.querySelectorAll(getSelector["APP_MAIL"])).map(element => element.innerText)[0],
-        additional_info: Array.from(document.querySelectorAll(getSelector["APP_ADDITIONAL"])).map(element => element.innerText)[0]  
-      }), getSelector)
-      .then((info) => {
-        //finalPush(info)
-        console.log(info);
-        incrementCounter()
-      })
-      .catch()
+  while (true) {  
+    console.log(getLink(getState().counter)); 
+    
+    try {
+      await nightmare
+        .goto("https://play.google.com/store/apps/details?id=" + getLink(getState().counter))
+        .wait(100)
+        .evaluate(() => {
+          var mail, additional_info
+          
+          for (var i = 1; i < 5; i++) {
+            mail = Array
+              .from(document.querySelectorAll(".xyOfqd > .hAyfc:last-child > .htlgb .htlgb > div:nth-child(" + i + ") > a"))
+              .map(element => element.innerText)[0]
+              
+            if(mail.indexOf('@') !== -1) break
+          }
+          
+          if(Array.from(document.querySelectorAll(".xyOfqd > .hAyfc:last-child > .htlgb .htlgb > div:last-child > a")).map(element => element.href)[0] === undefined) {
+            additional_info = Array.from(document.querySelectorAll(".xyOfqd > .hAyfc:last-child > .htlgb .htlgb > div:last-child")).map(element => element.innerText)[0]
+          }
+          
+          return {
+            company_name: Array.from(document.querySelectorAll(".i4sPve > .T32cc.UAO9ie:first-child > a")).map(element => element.innerText)[0],
+            mail: mail,
+            additional_info: additional_info 
+          }
+        })
+        .then((info) => {
+          console.log(info);
+          finalPush(info)
+          incrementCounter()
+        })
+    } catch (e) {
+      incrementCounter()
+      continue
+    }     
   }
 }
 
-Final()
+Main()

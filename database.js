@@ -8,11 +8,17 @@ const { CATEGORIES } = require('./otherData')
 
 exports.previousPush = (info) => {
   Maildb.push("/" + info[0], [])
-  Linkdb.push("/links[]", info[1])
+  Linkdb.push("/links[]", info[1], true)
 }
 
 exports.finalPush = (info) => {
-  Maildb.push("/" + info.company_name, [info.mail, info.additional_info])
+  if(info.company_name !== undefined) {
+    if(info.additional_info === undefined) {
+      Maildb.push("/" + info.company_name, [info.mail])
+    } else {
+      Maildb.push("/" + info.company_name, [info.mail, info.additional_info])
+    }
+  }
 }
 
 exports.isCompanyExists = (company_name) => {
