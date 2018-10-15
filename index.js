@@ -1,6 +1,6 @@
-const nightmare = require('nightmare')({ show: true })
+const nightmare = require('nightmare')({ show: true, executionTimeout: 5000})
 const { getSelector } = require('./otherData')
-const { previousPush, nextState, getState, isCompanyExists } = require('./database')
+const { previousPush, finalPush, nextState, getState, isCompanyExists, incrementCounter, getLink } = require('./database')
 
 const createURL = () => {
   let state = getState()
@@ -43,7 +43,7 @@ const goToGrid = () => {
 /*===================================== MAIN LOOP ===========================================*/
 
 const Main = async () => {
-  let end = true, counter = 1, scroll_counter = 1
+  let counter = 1
   
   await goToGrid()
   
@@ -64,7 +64,6 @@ const Main = async () => {
     console.log("Border is riched. Trying to scroll down")
 
     let cardSelector = ".card.no-rationale:nth-child(" + counter + ")"
-    scroll_counter++
     
     try {              
       await nightmare
@@ -84,21 +83,33 @@ const Main = async () => {
         info = await getNthGridInfo(counter)
       } catch (err) {
         console.log("Pressing is unsuccessfull. Going forward")
-        process.exit(0)
+        nextState()
+        break
       }
     }
-  }  
+  }
+  
+  Main()  
 }
 
-Main()
+//Main()
 
-const Test = async () => {
-  
-  await goToGrid()
-  
-  await nightmare
-    .scrollTo(10000, 0)
-  
+const Final = async () => {
+  while (true) {
+    await nightmare
+      .goto("https://play.google.com/store/apps/details?id=com." + getLink(getState().counter))
+      .evaluate((getSelector) => ({
+        company_name: Array.from(document.querySelectorAll(getSelector["APP_NAME"])).map(element => element.innerText)[0],
+        mail: Array.from(document.querySelectorAll(getSelector["APP_MAIL"])).map(element => element.innerText)[0],
+        additional_info: Array.from(document.querySelectorAll(getSelector["APP_ADDITIONAL"])).map(element => element.innerText)[0]  
+      }), getSelector)
+      .then((info) => {
+        //finalPush(info)
+        console.log(info);
+        incrementCounter()
+      })
+      .catch()
+  }
 }
 
-//Test()
+Final()

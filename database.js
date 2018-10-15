@@ -26,6 +26,10 @@ exports.isCompanyExists = (company_name) => {
   return true
 }
 
+exports.getLink = (number) => {
+  return Linkdb.getData("/links[" + number + "]")
+}
+
 /*====================================== STATE ========================================== */
 
 exports.incrementCounter = () => {

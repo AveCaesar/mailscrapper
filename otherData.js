@@ -61,5 +61,6 @@ exports.getSelector = (selector_name) => ({
   GRID_NAME: "a.subtitle",
   APP_MAIL: ".xyOfqd > .hAyfc:last-child > .htlgb .htlgb > div:nth-child(2) > a",
   APP_ADDITIONAL: ".xyOfqd > .hAyfc:last-child > .htlgb .htlgb > div:last-child",
+  APP_NAME: ".i4sPve > .T32cc.UAO9ie:first-child > a",
   GRID_MORE_BUTTON: "#show-more-button"
 })[selector_name]
